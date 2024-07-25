@@ -1,0 +1,168 @@
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: #000 !important;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0; /* Ensure no margin */
+}
+
+.weather-container {
+  background-color: #000928;
+  color: white;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.main-content {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.left-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #152238; /* Dark blue background for cards */
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.right-panel {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header input {
+  width: 70%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px 0 0 5px;
+  background-color: #152238;
+  color: white;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.location-button {
+  background-color: #152238; /* Dark blue background for button */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px; /* Make the button rectangular */
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 13%; /* Adjust margin if necessary */
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.location-button i {
+  margin-right: 5px; /* Add space between icon and text */
+}
+
+.location-button:hover {
+  background-color: #1d3a70; /* Lighter blue on hover */
+}
+
+.current-weather {
+  text-align: center;
+}
+
+.current-weather .temp-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.current-weather img {
+  width: 100px;
+  height: 100px;
+}
+
+.current-weather .temp {
+  font-size: 48px;
+  margin-left: 20px;
+}
+
+.today-forecast, .weekly-forecast {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.forecast-item {
+  background-color: #152238; /* Dark blue background for cards */
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  margin: 5px;
+  flex: 1 1 calc(25% - 10px);
+  min-width: 100px;
+  color: white;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.air-conditions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.air-condition {
+  background-color: #152238; /* Dark blue background for cards */
+  padding: 10px;
+  border-radius: 10px;
+  width: 100px;
+  text-align: center;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.loading, .error-message {
+  color: white;
+  font-size: 18px;
+  text-align: center;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+@media (max-width: 768px) {
+  .forecast-item {
+    flex: 1 1 calc(50% - 10px);
+  }
+
+  .current-weather .temp {
+    font-size: 36px;
+  }
+
+  .current-weather img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .current-weather .temp {
+    font-size: 24px;
+    margin-left: 10px;
+  }
+}

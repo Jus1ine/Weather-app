@@ -1,0 +1,57 @@
+<div class="weather-container" *ngIf="!loading && weatherData">
+  <div class="main-content">
+    <div class="left-panel">
+      <div class="weekly-forecast">
+        <div class="forecast-item" *ngFor="let day of weeklyForecast">
+          <p>{{ day.day }}</p>
+          <img [src]="getWeatherIcon(day.icon)" alt="Weather icon">
+          <p>{{ day.temp.max }}°/{{ day.temp.min }}°C</p>
+          <p>{{ day.weather }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <div class="header">
+        <input type="text" placeholder="Search for cities" (keyup.enter)="searchCity($event)">
+        <button class="location-button" (click)="askForLocation()">
+          <i class="fa fa-map-marker"></i> <!-- Map marker icon -->
+        </button>
+      </div>
+      <div class="current-weather">
+        <h2>{{ weatherData?.name }}</h2>
+        <p>Chance of rain: {{ weatherData?.rain ? weatherData.rain['1h'] : 0 }}%</p>
+        <div class="temp-icon">
+          <img [src]="getWeatherIcon(weatherData?.weather[0]?.icon)" alt="Weather icon">
+          <div class="temp">{{ weatherData?.main?.temp }}°C</div>
+        </div>
+      </div>
+      <div class="today-forecast">
+        <div class="forecast-item" *ngFor="let hour of hourlyForecast">
+          <p>{{ hour.time }}</p>
+          <img [src]="getWeatherIcon(hour.icon)" alt="Weather icon">
+          <p>{{ hour.temp }}°C</p>
+        </div>
+      </div>
+      <div class="air-conditions">
+        <div class="air-condition">
+          <p>Real Feel</p>
+          <p>{{ weatherData?.main?.feels_like }}°C</p>
+        </div>
+        <div class="air-condition">
+          <p>Wind</p>
+          <p>{{ weatherData?.wind?.speed }} km/h</p>
+        </div>
+        <div class="air-condition">
+          <p>UV Index</p>
+          <p>{{ uvIndex }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading">Loading...</div>
+
+<div *ngIf="!loading && showError" class="error-message">
+  <p>Could not fetch weather data. Please try again.</p>
+</div>
