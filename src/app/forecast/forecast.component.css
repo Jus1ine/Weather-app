@@ -1,0 +1,257 @@
+/* General Styles */
+* {
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: linear-gradient(135deg, #121212, #181818);
+  color: #E0E0E0;
+  line-height: 1.6;
+}
+
+/* Main Content */
+.content, .content2 {
+  margin: 30px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #2e4057;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 1000px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.content:hover, .content2:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Top Side */
+.top-side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.city-name {
+  font-size: 2.5rem;
+  color: #66CCFF;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.temp-container {
+  margin-top: 1rem;
+}
+
+.temperature {
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: #FFFFFF;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.temperature-options {
+  margin-top: 10px;
+}
+
+.temperature-options label {
+  font-size: 1rem;
+  color: #E0E0E0;
+  margin-right: 10px;
+}
+
+.temperature-options select {
+  padding: 8px;
+  border: 1px solid #555;
+  border-radius: 10px;
+  background-color: #333;
+  color: #E0E0E0;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.temperature-options select:hover {
+  background-color: #444;
+}
+
+/* Section 2 */
+.section-2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  border-radius: 15px;
+  background-color: #2e4057;
+}
+
+.picture-container {
+  width: 100%;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.section-image2 {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.info-box {
+  width: 100%;
+  text-align: left;
+}
+
+.info-box p {
+  margin: 10px 0;
+  font-size: 1rem;
+  color: #66CCFF;
+}
+
+.capitalize {
+  text-transform: capitalize;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #00E5FF;
+}
+
+.capital {
+  text-transform: capitalize;
+}
+
+.bot-side {
+  width: 95%;
+}
+
+.container-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  width: 100%;
+  overflow-x: auto;
+  padding: 0 10px;
+}
+
+.smaller-container1 {
+  flex: 0 0 auto;
+  width: calc(20% - 20px);
+  background: #4A6572;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 10px;
+  color: #E0E0E0;
+  text-align: center;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.smaller-container1:hover {
+  transform: translateY(-5px);
+  background-color: #1E2835;
+}
+
+.container-divider {
+  display: flex;
+  flex-direction: column;
+}
+
+.container-divider .left {
+  margin-bottom: 10px;
+}
+
+.container-divider .left h3 {
+  font-size: 1.2rem;
+  color: #66CCFF;
+}
+
+.container-divider .right {
+  font-size: 0.9rem;
+  color: #66CCFF;
+}
+
+/* Search Container */
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.left-container {
+  flex: 1;
+}
+
+.right-container {
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  padding: 12px 20px;
+  border: 1px solid #444;
+  border-radius: 25px;
+  width: 100%;
+  max-width: 400px;
+  font-size: 1rem;
+  background-color: #333;
+  color: #E0E0E0;
+  transition: all 0.3s ease;
+  margin-right: 10px;
+}
+
+.search-input::placeholder {
+  color: #888;
+}
+
+.search-input:focus {
+  border-color: #66CCFF;
+  outline: none;
+  box-shadow: 0 0 5px rgba(102, 204, 255, 0.5);
+}
+
+.search-button,
+.show-location-button {
+  padding: 12px 20px;
+  background: linear-gradient(45deg, #66CCFF, #33B5E5);
+  color: #121212;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.search-button:hover,
+.show-location-button:hover {
+  background: linear-gradient(45deg, #33B5E5, #66CCFF);
+  transform: translateY(-2px);
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+  .content, .content2 {
+    width: 90%;
+  }
+
+  .search-container {
+    flex-direction: column;
+  }
+
+  .search-input {
+    border-radius: 25px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .search-button,
+  .show-location-button {
+    border-radius: 25px;
+  }
+}
