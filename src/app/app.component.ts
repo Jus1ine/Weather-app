@@ -1,154 +1,289 @@
-import { Component, OnInit } from '@angular/core';
-import { WeatherService } from './weather.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterOutlet } from '@angular/router';
+import { WeatherService } from './services/weather.service';
+import { Observable, Observer, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
+import Swal from 'sweetalert2';
+import { CommonModule } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { RealTimeClockComponent } from "./components/widgets/real-time-clock/real-time-clock.component";
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, ReactiveFormsModule, CommonModule, MatTooltipModule, RealTimeClockComponent, MatMenuModule, MatButtonModule],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
-  loading = true;
+export class AppComponent implements OnInit, OnDestroy {
+  title = 'web_app_weather';
+  searchForm: any;
+  private subscriptions = new Subscription();
   weatherData: any;
-  hourlyForecast: any[] = [];
-  weeklyForecast: any[] = [];
-  uvIndex = 0;
-  showError = false; // Add a flag for showing error message
+  forecastData: any;
+  loading: boolean = false;
+  loadingSuggestions: boolean = false;
+  metricSystem: any = '&units=metric'; // My default metric system.
+  userLocation:any;
+  showAdvanced:boolean = false;
+  suggestions:any
+  inputFocused: boolean = false;
+  clickingSuggestion = false;
+  showNotFoundMessage = false;
 
-  constructor(private weatherService: WeatherService) {}
 
-  ngOnInit() {
-    this.getWeatherData(14.5995, 120.9842); // Default location: Manila
-  }
+  constructor(private http: HttpClient,private builder: FormBuilder, private weather: WeatherService){  
+    this.searchForm = builder.group({
+      city: ['', Validators.required],
+      metricSystem: [this.metricSystem]
+    })
 
-  askForLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          console.log(`Latitude: ${lat}, Longitude: ${lon}`);
-          this.getWeatherData(lat, lon);
-        },
-        (error) => {
-          console.error('Error fetching location', error);
-          alert('Error fetching location. Using default location: Manila.');
-          this.getWeatherData(14.5995, 120.9842); // Coordinates for Manila
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-      );
-    } else {
-      console.error('Geolocation is not supported by this browser.');
-      alert('Geolocation is not supported by this browser. Using default location: Manila.');
-      this.getWeatherData(14.5995, 120.9842); // Coordinates for Manila
+    const metricSystem:any = localStorage.getItem('metricSystem');
+    if(metricSystem && metricSystem !== 'null'){
+      this.metricSystem = metricSystem;
     }
+
+    const showAdvancedString:any = localStorage.getItem('showAdvanced');
+    if(showAdvancedString){
+      this.showAdvanced = JSON.parse(showAdvancedString);
+    }
+
+    // const userLocationString:any = localStorage.getItem('userLocation');
+    // if(userLocationString){
+    //   this.userLocation = JSON.parse(userLocationString);
+    // }
+    
   }
+  
+  ngOnInit(): void {   
+    this.getUserLocation(); 
 
-  getWeatherData(lat: number, lon: number) {
-    console.log(`Fetching weather data for lat: ${lat}, lon: ${lon}`);
-    this.weatherService.getWeather(lat, lon).subscribe(
-      (data) => {
-        this.weatherData = data;
-        console.log('Weather data:', this.weatherData);
-        this.loading = false;
-        this.showError = false; // Hide error message if data is fetched successfully
-        this.getHourlyForecast(lat, lon);
-        this.getWeeklyForecast(lat, lon);
-      },
-      (error) => {
-        console.error('Error fetching weather data', error);
-        this.showError = true; // Show error message
-        this.loading = false;
-      }
-    );
-  }
-
-  getHourlyForecast(lat: number, lon: number) {
-    console.log(`Fetching hourly forecast for lat: ${lat}, lon: ${lon}`);
-    this.weatherService.getHourlyForecast(lat, lon).subscribe(
-      (data: any) => {
-        this.hourlyForecast = data.list.slice(0, 8).map((item: any) => {
-          return {
-            time: new Date(item.dt * 1000).getHours() + ':00',
-            icon: item.weather[0].icon,
-            temp: item.main.temp
-          };
-        });
-        console.log('Hourly forecast:', this.hourlyForecast);
-      },
-      (error) => {
-        console.error('Error fetching hourly forecast data', error);
-        alert('Error fetching hourly forecast data. Please try again later.');
-      }
-    );
-  }
-
-  getWeeklyForecast(lat: number, lon: number) {
-    console.log(`Fetching weekly forecast for lat: ${lat}, lon: ${lon}`);
-    this.weatherService.getHourlyForecast(lat, lon).subscribe(
-      (data: any) => {
-        const dailyData = data.list.filter((item: any) => item.dt_txt.includes('12:00:00'));
-        this.weeklyForecast = dailyData.slice(0, 7).map((item: any) => {
-          return {
-            day: new Date(item.dt * 1000).toLocaleDateString('en-US', { weekday: 'short' }),
-            icon: item.weather[0].icon,
-            temp: {
-              max: item.main.temp_max,
-              min: item.main.temp_min
-            },
-            weather: item.weather[0].description
-          };
-        });
-        console.log('Weekly forecast:', this.weeklyForecast);
-      },
-      (error) => {
-        console.error('Error fetching weekly forecast data', error);
-        alert('Error fetching weekly forecast data. Please try again later.');
-      }
-    );
-  }
-
-  searchCity(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    const city = inputElement.value.trim(); // Remove any extra whitespace
-
-    if (city) {
-      console.log(`Searching weather data for city: ${city}`);
-      this.weatherService.getWeatherByName(city).subscribe(
-        (data: any) => {
-          // Check if the response contains valid coordinates
-          if (data && data.coord) {
-            const lat = data.coord.lat;
-            const lon = data.coord.lon;
-            console.log(`City found. Latitude: ${lat}, Longitude: ${lon}`);
-            this.getWeatherData(lat, lon);
-          } else {
-            // If no valid coordinates are found
-            console.error('City not found or invalid location.');
-            this.showError = true; // Show error message
-            alert('City not found. Please check the city name and try again.');
-            this.loading = false;
+    this.searchForm.get('city')?.valueChanges
+    .pipe(
+      // wait for a bit.
+      debounceTime(200),
+      // only trigger if value changes.
+      distinctUntilChanged()
+    )
+    .subscribe((value: any) => {
+      if (value && value.length > 2) {
+        this.loadingSuggestions = true;
+        this.showNotFoundMessage = false;
+        this.weather.geocodeByCity({ city: value }).subscribe(
+          (res: any) => {
+            console.log(res);
+            this.suggestions = res.payload;
+            this.loadingSuggestions = false;
+            this.showNotFoundMessage = this.suggestions.length === 0;
+          },
+          error => {
+            console.error('Error:', error);
+            this.loadingSuggestions = false;
           }
-        },
-        (error) => {
-          console.error('Error fetching weather data for city', error);
-          this.showError = true; // Show error message
-          alert('Error fetching weather data for city. Please ensure the city name is correct.');
-          this.loading = false;
-        }
-      );
-    } else {
-      alert('Please enter a city name.');
-      this.loading = false;
+        );
+      } else {
+        this.suggestions = [];
+        this.showNotFoundMessage = false;
+      }
+    });
+
+    document.addEventListener('click', this.onDocumentClick.bind(this));
+  }
+
+  onDocumentClick(event: MouseEvent) {
+    if (!this.inputFocused || this.clickingSuggestion) {
+      return;
+    }
+    const target = event.target as HTMLElement;
+    if (!target.closest('.suggestion-container')) {
+      this.inputFocused = false;
     }
   }
 
-  getWeatherIcon(icon: string): string {
-    return `http://openweathermap.org/img/wn/${icon}@2x.png`;
+  onInputFocus() {
+    this.inputFocused = true;
   }
 
-  getFormattedDate(): string {
-    const date = new Date();
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
+  onInputBlur() {
+    if (!this.clickingSuggestion) {
+      this.inputFocused = false;
+    }
   }
+
+  onSuggestionMouseDown() {
+    this.clickingSuggestion = true;
+  }
+
+  onSuggestionMouseUp() {
+    this.clickingSuggestion = false;
+  }
+
+  onSuggestionClick(location: any) {
+    this.inputFocused = false;
+    this.clickingSuggestion = false;
+    // Handle suggestion click
+    console.log(location);
+    this.searchByLocation(location.lat, location.lon)
+  }
+
+  getUserLocation() {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+          const userLocation = {
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          };        
+        console.log(userLocation);
+        this.searchByLocation(userLocation.lat, userLocation.lon)
+      }),
+      {
+        enableHighAccuracy: true,
+        // timeout: 30000,
+        timeout: 5000,
+        maximumAge: 0
+      }
+  }
+
+  searchByLocation(lat: any = null, lon: any = null) {
+    this.loading = true;
+        let userLocation;
+          userLocation = {
+            lat: lat,
+            lon: lon,
+            metricSystem: this.metricSystem
+          };        
+        this.subscriptions.add(
+          this.weather.searchByLocation(userLocation).subscribe(
+            (res: any) => {
+              this.weatherData = res.payload;
+              console.log(this.weatherData)
+              this.loading = false;
+            },
+            (error) => {
+              console.error('Error fetching weather:', error);
+              this.loading = false;
+            }
+          )
+        );      
+  }
+
+  searchByCity(){
+    this.searchForm.patchValue({
+      metricSystem: this.metricSystem
+    })
+    if(!this.searchForm.valid){
+      Swal.fire({
+        title: "Please enter a City",
+        icon: "warning"
+      })
+      return
+    }
+    this.subscriptions.add(
+      this.weather.searchByCity(this.searchForm.value).subscribe((res:any)=>{
+        this.weatherData = res.payload;
+        console.log("City:")
+        console.log(this.weatherData)
+      }, error =>{
+        switch (error.status){
+          case 404:
+            Swal.fire({
+              title: "City not found",
+              text: `${error.error.status.message}`,
+              icon: "warning",
+              timer: 2000,
+              timerProgressBar: true,
+            })
+          break;
+          case 400:
+            Swal.fire({
+              title: "Invalid City",
+              text: `Please enter a valid city.`,
+              icon: "warning",
+              timer: 2000,
+              timerProgressBar: true,
+            })
+          break;
+          default:
+            Swal.fire({
+              title: "Error fetching data",
+              text: `${error.error.status.message}`,
+              icon: "error",
+              timer: 2000,
+              timerProgressBar: true,
+            })
+        }
+      })
+    )
+  }
+
+  
+  changeMetricSystem(metricSystem: string){
+    this.metricSystem = metricSystem;
+    localStorage.setItem('metricSystem', metricSystem);
+    if(this.searchForm.value.city){
+      this.searchByCity();
+    } else{
+      this.getUserLocation();
+    }    
+  }
+
+  getMetricSymbol(metric: string): string {
+    switch(metric){
+      case '&units=metric':
+        return 'C'
+      case '&units=imperial':
+          return 'F'
+      case '&units=standard':
+          return 'K'
+      default:
+          return ''
+    }
+  }
+
+  setAsLocation(lat:number, lon:number){
+    const userLocation = {lat:lat, lon:lon};
+    this.userLocation = userLocation
+    const userLocationToString = JSON.stringify(userLocation);
+    localStorage.setItem('userLocation', userLocationToString);    
+  }
+
+  toggleAdvanced(){
+    this.showAdvanced = !this.showAdvanced;
+    const showAdvancedToString = JSON.stringify(this.showAdvanced);
+    localStorage.setItem('showAdvanced', showAdvancedToString);  
+  }
+
+  getWindDirection(deg: number): string {
+    switch (true) {
+        case (deg >= 0 && deg < 22.5):
+            return 'N';
+        case (deg >= 22.5 && deg < 67.5):
+            return 'NE';
+        case (deg >= 67.5 && deg < 112.5):
+            return 'E';
+        case (deg >= 112.5 && deg < 157.5):
+            return 'SE';
+        case (deg >= 157.5 && deg < 202.5):
+            return 'S';
+        case (deg >= 202.5 && deg < 247.5):
+            return 'SW';
+        case (deg >= 247.5 && deg < 292.5):
+            return 'W';
+        case (deg >= 292.5 && deg < 337.5):
+            return 'NW';
+        default:
+            return 'N';
+    }
+}
+  
+
+
+ngOnDestroy(): void {
+  document.removeEventListener('click', this.onDocumentClick.bind(this));
+  this.subscriptions.unsubscribe();
+}
+
 }
